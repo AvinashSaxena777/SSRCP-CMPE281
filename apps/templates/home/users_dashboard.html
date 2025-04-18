@@ -1,0 +1,360 @@
+<!-- templates/users_dashboard.html -->
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt--6">
+  {% if messages %}
+  <div class="alert-container">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-lg-6 col-7">
+          <h6 class="h2 text-white d-inline-block mb-0">User Management</h6>
+        </div>
+        <div class="col-lg-6 col-5 text-right">
+          {% if request.user.profile.userType.typeName == 'SUPER_ADMIN' or request.user.profile.userType.typeName == 'ADMIN' %}
+          <button class="btn btn-sm btn-neutral" data-toggle="modal" data-target="#createUserModal">Create User</button>
+          {% endif %}
+          <button class="btn btn-sm btn-neutral" data-toggle="modal" data-target="#filterModal">Filters</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-header border-0">
+          <h3 class="mb-0">Organization Users</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="table align-items-center table-flush">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">Username</th>
+                <th scope="col">Email</th>
+                <th scope="col">User Type</th>
+                <th scope="col">Organization</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+              <tr>
+                <td>
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input user-checkbox" 
+                           id="userCheck{{ user.id }}" value="{{ user.id }}">
+                    <label class="custom-control-label" for="userCheck{{ user.id }}"></label>
+                  </div>
+                </td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.profile.userType.typeName }}</td>
+                <td>{{ user.profile.org.organizationName }}</td>
+                <td>
+                  <span class="badge badge-{% if user.profile.isActive %}success{% else %}danger{% endif %}">
+                    {% if user.profile.isActive %}Active{% else %}Inactive{% endif %}
+                  </span>
+                </td>
+                <td>
+                  {% if request.user.profile.userType.typeName != 'STAFF' %}
+                  <button class="btn btn-sm btn-primary edit-user" 
+                          data-userid="{{ user.id }}" data-toggle="modal" 
+                          data-target="#editUserModal">Edit</button>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal fade" id="createUserModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create New User</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="createUserForm" method="POST" action="{% url 'create_user' %}">
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" class="form-control" name="username" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" class="form-control" name="email" required>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" class="form-control" name="password" required>
+          </div>
+          <div class="form-group">
+            <label>User Type</label>
+            <select class="form-control" name="user_type" id="userTypeSelect">
+              {% for ut in user_types %}
+                <option value="{{ ut.typeName }}">{{ ut.typeName }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Organization</label>
+            <select class="form-control" name="org_id">
+              {% for org in owned_organizations %}
+              <option value="{{ org.id }}">{{ org.organizationName }}</option>
+              {% endfor %}
+            </select
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editUserForm" method="POST" action="{% url 'update_user' user.id %}">
+              {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" class="form-control" id="edit-username" name="username" 
+       value="{{ profile.user.username }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="edit-email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>User Type</label>
+                        <select class="form-control" id="edit-user-type" name="user_type">
+                            {% if request.user.profile.userType.typeName == 'SUPER_ADMIN' %}
+                            <option value="{{ super_admin_type.id }}">Super Admin</option>
+                            <option value="{{ admin_type.id }}">Admin</option>
+                            {% endif %}
+                            <option value="{{ staff_type.id }}">Staff</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Organization</label>
+                        <select class="form-control" id="edit-org" name="org_id">
+                            {% for org in owned_organizations %}
+                            <option value="{{ org.id }}">{{ org.organizationName }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="edit-is-active" name="isActive">
+                            <label class="custom-control-label" for="edit-is-active">Active</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Delete</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="deleteMessage"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include "includes/footer.html" %}
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+  $(function() {
+      // --- Utility Functions ---
+      function showAlert(message, type="success") {
+          const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="z-index:2000; position:fixed; top:10px; right:10px; min-width:300px;">
+              ${message}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>`;
+          $("body").append(alertHtml);
+          setTimeout(() => { $(".alert").alert('close'); }, 3000);
+      }
+  
+      // --- Bulk Delete ---
+      $("#deleteSelected").on("click", function() {
+          const selected = $(".user-checkbox:checked");
+          if (selected.length === 0) {
+              showAlert("No users selected.", "warning");
+              return;
+          }
+          $("#deleteMessage").text(`Are you sure you want to delete ${selected.length} users?`);
+          $("#deleteConfirmModal").modal("show");
+      });
+  
+      $("#confirmDelete").on("click", function() {
+          const userIds = $(".user-checkbox:checked").map(function() {
+              return $(this).val();
+          }).get();
+  
+          $.ajax({
+              url: "{% url 'bulk_delete_users' %}",
+              method: "POST",
+              data: {
+                  user_ids: userIds,
+                  csrfmiddlewaretoken: "{{ csrf_token }}"
+              },
+              success: function() {
+                  $("#deleteConfirmModal").modal("hide");
+                  showAlert("Users deleted successfully.", "success");
+                  setTimeout(() => { location.reload(); }, 1000);
+              },
+              error: function(xhr) {
+                  $("#deleteConfirmModal").modal("hide");
+                  showAlert("Error deleting users: " + (xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : "Unknown error"), "danger");
+              }
+          });
+      });
+  
+      // --- Edit User Modal ---
+      $(".edit-user").on("click", function() {
+          const userId = $(this).data("userid");
+          // Clear previous values
+          $("#editUserForm")[0].reset();
+          $("#editUserForm").attr("action", `/users/${userId}/update/`);
+          // Fetch user data
+          $.get(`/users/${userId}/`, function(data) {
+              $("#edit-username").val(data.username);
+              $("#edit-email").val(data.email);
+              $("#edit-user-type").val(data.userType);
+              $("#edit-org").val(data.org_id);
+              $("#edit-is-active").prop("checked", data.isActive);
+          }).fail(function(xhr) {
+              showAlert("Failed to load user data: " + (xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : "Unknown error"), "danger");
+              $("#editUserModal").modal("hide");
+          });
+      });
+  
+      // --- Edit User Submit ---
+      $("#editUserForm").on("submit", function(e) {
+          e.preventDefault();
+          const $form = $(this);
+          const actionUrl = $form.attr("action");
+          const formData = $form.serialize();
+  
+          $.ajax({
+              url: actionUrl,
+              method: "POST",
+              data: formData,
+              success: function() {
+                  $("#editUserModal").modal("hide");
+                  showAlert("User updated successfully.", "success");
+                  setTimeout(() => { location.reload(); }, 1000);
+              },
+              error: function(xhr) {
+                  showAlert("Error updating user: " + (xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : "Unknown error"), "danger");
+              }
+          });
+      });
+  
+      // --- Create User Modal ---
+      $("#createUserForm").on("submit", function(e) {
+          e.preventDefault();
+          const $form = $(this);
+          const formData = $form.serialize();
+  
+          $.ajax({
+              url: $form.attr("action"),
+              method: "POST",
+              data: formData,
+              success: function() {
+                  $("#createUserModal").modal("hide");
+                  showAlert("User created successfully.", "success");
+                  setTimeout(() => { location.reload(); }, 1000);
+              },
+              error: function(xhr) {
+                  showAlert("Error creating user: " + (xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : "Unknown error"), "danger");
+              }
+          });
+      });
+  
+      // --- User Type/Organization Select Logic ---
+      $("#userTypeSelect, #edit-user-type").on("change", function() {
+          // Example: Hide organization picklist for Super Admin, show for others
+          const selectedType = $(this).val();
+          const orgGroup = $(this).closest("form").find(".org-group");
+          if (selectedType === "SUPER_ADMIN") {
+              orgGroup.hide();
+          } else {
+              orgGroup.show();
+          }
+      }).trigger("change");
+  
+      // --- Tooltips ---
+      $('[data-toggle="tooltip"]').tooltip();
+  
+      // --- Reset forms on modal hide ---
+      $("#createUserModal, #editUserModal").on("hidden.bs.modal", function() {
+          $(this).find("form")[0].reset();
+      });
+  });
+  </script>
+{% endblock javascripts %}
