@@ -82,6 +82,8 @@ class Robot(models.Model):
     version = models.FloatField()
     healthStatus = models.IntegerField()
     isActive = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     ownerId = models.ForeignKey(
         User,  # Use the custom user model
         on_delete=models.CASCADE, 
@@ -105,6 +107,8 @@ class Alert(models.Model):
     timestamp = models.DateTimeField(null=True, blank=True)
     resolved_by = models.CharField(max_length=255)
     resolution_time = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"Alert {self.alert_id} for Robot {self.robot_id.robotId}"
@@ -134,6 +138,8 @@ class AIAnalytic(models.Model):
             ('High', 'High'),
         ]
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"{self.detection_type} detected at {self.frame} - {self.severity} severity"

@@ -1,0 +1,224 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Dashboard {% endblock title %}
+
+{% block content %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-lg-6 col-7">
+          <h6 class="h2 text-white d-inline-block mb-0">System Dashboard</h6>
+          <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+              <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
+              <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+            </ol>
+          </nav>
+        </div>
+        <div class="col-lg-6 col-5 text-right">
+          <div class="btn-group">
+            <button class="btn btn-sm btn-neutral" data-toggle="tab" href="#users">Users</button>
+            <button class="btn btn-sm btn-neutral" data-toggle="tab" href="#robots">Robots</button>
+            <button class="btn btn-sm btn-neutral" data-toggle="tab" href="#alerts">Alerts</button>
+          </div>
+        </div>
+      </div>
+      <!-- Cards -->
+      <div class="row">
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Organizations</h5>
+                  <span class="h2 font-weight-bold mb-0">{{ metrics.organizations }}</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                    <i class="ni ni-building"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Active Users</h5>
+                  <span class="h2 font-weight-bold mb-0">{{ metrics.users }}</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                    <i class="ni ni-single-02"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Active Robots</h5>
+                  <span class="h2 font-weight-bold mb-0">{{ metrics.robots }}</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                    <i class="ni ni-robot"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Active Alerts</h5>
+                  <span class="h2 font-weight-bold mb-0">{{ metrics.alerts }}</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                    <i class="ni ni-notification-70"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col-xl-8">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">System Activity Timeline</h3>
+        </div>
+        <div class="card-body">
+          <canvas id="activityTimeline" class="chart-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-4">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">Robot Status Distribution</h3>
+        </div>
+        <div class="card-body">
+          <canvas id="robotStatusChart" class="chart-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">Top Organizations</h3>
+        </div>
+        <div class="card-body">
+          <canvas id="orgChart" class="chart-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header bg-transparent">
+          <h3 class="mb-0">Alert Types</h3>
+        </div>
+        <div class="card-body">
+          <canvas id="alertTypeChart" class="chart-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="{% static 'assets/vendor/chart.js/dist/Chart.min.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Activity Timeline
+      new Chart(document.getElementById('activityTimeline'), {
+        type: 'line',
+        data: {
+          labels: {{ charts.robot_timeline.labels|safe }},
+          datasets: [
+            {
+              label: 'Robot Activity',
+              data: {{ charts.robot_timeline.data }},
+              borderColor: '#2dce89',
+              tension: 0.4,
+            },
+            {
+              label: 'Alert Activity',
+              data: {{ charts.alert_timeline.data }},
+              borderColor: '#f5365c',
+              tension: 0.4,
+            },
+          ],
+        },
+      });
+  
+      // Robot Status Chart
+      new Chart(document.getElementById('robotStatusChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Active', 'Inactive', 'Maintenance'],
+          datasets: [
+            {
+              data: [{{ metrics.robots }}, 15, 8],
+              backgroundColor: ['#2dce89', '#f5365c', '#fb6340'],
+            },
+          ],
+        },
+      });
+  
+      // Organization Distribution
+      new Chart(document.getElementById('orgChart'), {
+        type: 'bar',
+        data: {
+          labels: {{ charts.org_dist.labels|safe }},
+          datasets: [
+            {
+              label: 'Users per Organization',
+              data: {{ charts.org_dist.data }},
+              backgroundColor: '#5e72e4',
+            },
+          ],
+        },
+      });
+  
+      // Alert Type Distribution
+      new Chart(document.getElementById('alertTypeChart'), {
+        type: 'pie',
+        data: {
+          labels: ['Fire', 'Violence', 'Accident'],
+          datasets: [
+            {
+              data: [45, 30, 25],
+              backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56'],
+            },
+          ],
+        },
+      });
+    });
+  </script>
+{% endblock javascripts %}

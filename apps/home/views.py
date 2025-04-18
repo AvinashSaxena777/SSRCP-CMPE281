@@ -16,6 +16,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
 from .models import UserType
+from .dao.dashboard_dao import *
 import json
 
 
@@ -140,7 +141,27 @@ def delete_user(request, user_id):
     except Exception as e:
         messages.error(request, f'Error deleting user: {str(e)}')
         return redirect('users_dashboard')
+
+@login_required
+def dashboard(request):
+    dummy = 'dummy' in request.GET
     
+    context = {
+        'metrics': {
+            'organizations': get_organization_count(),
+            'users': get_user_count(),
+            'robots': get_robot_count(),
+            'alerts': get_alert_count()
+        },
+        'charts': {
+            'org_dist': get_organization_distribution(dummy),
+            'robot_owners': get_robot_ownership_distribution(dummy),
+            'robot_timeline': get_robot_timeline(dummy),
+            'alert_timeline': get_alert_timeline(dummy)
+        }
+    }
+    return render(request, 'home/dashboard.html', context)
+
 
 @login_required
 def users_dashboard(request):
