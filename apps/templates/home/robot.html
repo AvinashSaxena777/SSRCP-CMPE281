@@ -1,0 +1,110 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-lg-6 col-7">
+          <h6 class="h2 text-white d-inline-block mb-0">Robot Details</h6>
+          <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+              <li class="breadcrumb-item">
+                <a href="{% url 'robot_dashboard' %}"><i class="fas fa-robot"></i></a>
+              </li>
+              <li class="breadcrumb-item"><a href="{% url 'robot_dashboard' %}">Robots</a></li>
+              <li class="breadcrumb-item active" aria-current="page">{{ robot.modelName }}</li>
+            </ol>
+          </nav>
+        </div>
+        <div class="col-lg-6 col-5 text-right">
+          <a href="{% url 'robot_dashboard' %}" class="btn btn-sm btn-neutral">Back to Dashboard</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col-xl-8">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">{{ robot.get_modelName_display }} - {{ robot.robotId }}</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <dl class="row">
+                <dt class="col-sm-4">Model Name</dt>
+                <dd class="col-sm-8">{{ robot.get_modelName_display }}</dd>
+                
+                <dt class="col-sm-4">Robot ID</dt>
+                <dd class="col-sm-8">{{ robot.robotId }}</dd>
+                
+                <dt class="col-sm-4">Version</dt>
+                <dd class="col-sm-8">{{ robot.version }}</dd>
+              </dl>
+            </div>
+            <div class="col-md-6">
+              <dl class="row">
+                <dt class="col-sm-4">Health Status</dt>
+                <dd class="col-sm-8">
+                  <div class="progress">
+                    <div class="progress-bar bg-{{ health_status_class }}" 
+                         role="progressbar" 
+                         style="width: {{ robot.healthStatus }}%"
+                         aria-valuenow="{{ robot.healthStatus }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                      {{ robot.healthStatus }}%
+                    </div>
+                  </div>
+                </dd>
+                
+                <dt class="col-sm-4">Active Status</dt>
+                <dd class="col-sm-8">
+                  <span class="badge badge-{% if robot.isActive %}success{% else %}danger{% endif %}">
+                    {% if robot.isActive %}Active{% else %}Inactive{% endif %}
+                  </span>
+                </dd>
+              </dl>
+            </div>
+          </div>
+
+          <div class="row mt-4">
+            <div class="col-md-6">
+              <h4 class="mb-3">Technical Specifications</h4>
+              <dl class="row">
+                <dt class="col-sm-4">Simulation Session</dt>
+                <dd class="col-sm-8">{{ robot.simulationSession }}</dd>
+                
+                <dt class="col-sm-4">Camera Top</dt>
+                <dd class="col-sm-8">{{ robot.cameraTop }}</dd>
+                
+                <dt class="col-sm-4">Camera Front</dt>
+                <dd class="col-sm-8">{{ robot.cameraFront }}</dd>
+              </dl>
+            </div>
+            <div class="col-md-6">
+              <h4 class="mb-3">Ownership</h4>
+              <dl class="row">
+                <dt class="col-sm-4">Owner</dt>
+                <dd class="col-sm-8">{{ robot.owner.username }}</dd>
+                
+                <dt class="col-sm-4">Organization</dt>
+                <dd class="col-sm-8">{{ robot.owner.profile.org.organizationName }}</dd>
+                
+                <dt class="col-sm-4">Created At</dt>
+                <dd class="col-sm-8">{{ robot.created_at|date:"M d, Y H:i" }}</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% include "includes/footer.html" %}
+</div>
+{% endblock content %}

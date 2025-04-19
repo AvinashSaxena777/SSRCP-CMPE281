@@ -73,25 +73,32 @@ def save_user_profile(sender, instance, **kwargs):
         instance.profile.save()
     
 class Robot(models.Model):
+    MODEL_CHOICES = [
+        ('mercedes', 'Mercedes'),
+        ('cheverolet', 'Cheverolet'),
+        ('toyota', 'Toyota'),
+        ('tesla', 'Tesla'),
+    ]
+    
     id = models.AutoField(primary_key=True)
-    modelName = models.CharField(max_length=255)
+    modelName = models.CharField(max_length=20, choices=MODEL_CHOICES)
     simulationSession = models.IntegerField()
-    robotId = models.IntegerField()
-    cameraTop = models.CharField(max_length=255)
-    cameraFront = models.CharField(max_length=255)
-    version = models.FloatField()
-    healthStatus = models.IntegerField()
-    isActive = models.BooleanField(default=False)
+    robotId = models.IntegerField(null=True, blank=True)
+    cameraTop = models.CharField(max_length=255, null=True, blank=True)
+    cameraFront = models.CharField(max_length=255, null=True, blank=True)
+    version = models.FloatField(default=1.0)
+    healthStatus = models.IntegerField(default=100)
+    isActive = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    ownerId = models.ForeignKey(
-        User,  # Use the custom user model
-        on_delete=models.CASCADE, 
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
         related_name='owned_robots'
     )
-    
+
     def __str__(self):
-        return f"{self.modelName} - {self.robotId}"
+        return f"{self.get_modelName_display()} - {self.robotId or 'New'}"
 
 class Alert(models.Model):
     alert_id = models.AutoField(primary_key=True)

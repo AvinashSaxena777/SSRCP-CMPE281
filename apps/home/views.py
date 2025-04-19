@@ -14,9 +14,11 @@ from .dao.user_dao import UserDAO
 from .models import Organization
 from django.shortcuts import render
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from .models import UserType
 from .dao.dashboard_dao import *
+from .dao.robot_dao import RobotDAO
+from django.db import transaction
 import json
 
 
@@ -195,3 +197,43 @@ def bulk_delete_users(request):
         return JsonResponse({'status': 'success'})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+    
+@login_required    
+def robot_dashboard(request):
+    robots = RobotDAO.get_all_robots(request.user)
+    return render(request, 'home/robots_dashboard.html', {
+        'robots': robots,
+        'model_choices': Robot.MODEL_CHOICES
+    })
+
+@transaction.atomic
+def create_robot(request):
+    if request.method == 'POST':
+        try:
+            RobotDAO.create_robot(request.POST, request.user)
+            messages.success(request, 'Robot created successfully!')
+            return redirect('robot_dashboard')
+        except Exception as e:
+            messages.error(request, f'Error creating robot: {str(e)}')
+    return redirect('robot_dashboard')
+
+@transaction.atomic
+def bulk_delete_robots(request):
+    if request.method == 'POST':
+        robot_ids = request.POST.getlist('robot_ids')
+        try:
+            RobotDAO.bulk_delete(robot_ids)
+            messages.success(request, f'{len(robot_ids)} robots deleted')
+        except Exception as e:
+            messages.error(request, f'Delete failed: {str(e)}')
+    return redirect('robot_dashboard')
+
+def robot_detail(request, robot_id):
+    robot = get_object_or_404(Robot, id=robot_id)
+    context = {
+        'robot': robot,
+        'health_status_class': 'success' if robot.healthStatus > 75 
+                             else 'warning' if robot.healthStatus > 50 
+                             else 'danger'
+    }
+    return render(request, 'home/robot.html', context)
