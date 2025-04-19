@@ -7,19 +7,82 @@
     <div class="header-body">
       <div class="row align-items-center py-4">
         <div class="col-lg-6 col-7">
-          <h6 class="h2 text-white d-inline-block mb-0">Robot Details</h6>
-          <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
-            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-              <li class="breadcrumb-item">
-                <a href="{% url 'robot_dashboard' %}"><i class="fas fa-robot"></i></a>
-              </li>
-              <li class="breadcrumb-item"><a href="{% url 'robot_dashboard' %}">Robots</a></li>
-              <li class="breadcrumb-item active" aria-current="page">{{ robot.modelName }}</li>
-            </ol>
-          </nav>
+          <h6 class="h2 text-white d-inline-block mb-0">{{ robot.get_modelName_display }} - {{ robot.robotId }}</h6>
         </div>
         <div class="col-lg-6 col-5 text-right">
           <a href="{% url 'robot_dashboard' %}" class="btn btn-sm btn-neutral">Back to Dashboard</a>
+        </div>
+      </div>
+      
+      <!-- Metrics Cards -->
+      <div class="row">
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Speed</h5>
+                  <span class="h2 font-weight-bold mb-0" id="speed-value">0 km/h</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                    <i class="fas fa-tachometer-alt"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Throttle</h5>
+                  <span class="h2 font-weight-bold mb-0" id="throttle-value">0%</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-warning text-white rounded-circle shadow">
+                    <i class="fas fa-car-side"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Steering</h5>
+                  <span class="h2 font-weight-bold mb-0" id="steering-value">0°</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-danger text-white rounded-circle shadow">
+                    <i class="fas fa-compass"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="card card-stats">
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <h5 class="card-title text-uppercase text-muted mb-0">Brake</h5>
+                  <span class="h2 font-weight-bold mb-0" id="brake-value">0%</span>
+                </div>
+                <div class="col-auto">
+                  <div class="icon icon-shape bg-gradient-success text-white rounded-circle shadow">
+                    <i class="fas fa-stop-circle"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -27,84 +90,107 @@
 </div>
 
 <div class="container-fluid mt--6">
-  <div class="row">
-    <div class="col-xl-8">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="mb-0">{{ robot.get_modelName_display }} - {{ robot.robotId }}</h3>
+  <!-- Control Panels -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3 class="mb-0">Vehicle Controls</h3>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <input type="number" id="spawnX" class="form-control" placeholder="X" value="0">
+          </div>
+          <div class="form-group">
+            <input type="number" id="spawnY" class="form-control" placeholder="Y" value="0">
+          </div>
+          <div class="form-group">
+            <input type="number" id="spawnZ" class="form-control" placeholder="Z" value="0">
+          </div>
+          <button id="spawnBtn" class="btn btn-primary">Spawn</button>
+          <button id="destroyBtn" class="btn btn-danger">Destroy</button>
         </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6">
-              <dl class="row">
-                <dt class="col-sm-4">Model Name</dt>
-                <dd class="col-sm-8">{{ robot.get_modelName_display }}</dd>
-                
-                <dt class="col-sm-4">Robot ID</dt>
-                <dd class="col-sm-8">{{ robot.robotId }}</dd>
-                
-                <dt class="col-sm-4">Version</dt>
-                <dd class="col-sm-8">{{ robot.version }}</dd>
-              </dl>
+        <div class="col-md-6">
+          <div class="form-group">
+            <input type="number" id="targetX" class="form-control" placeholder="X" value="0">
+          </div>
+          <div class="form-group">
+            <input type="number" id="targetY" class="form-control" placeholder="Y" value="0">
+          </div>
+          <div class="form-group">
+            <input type="number" id="targetZ" class="form-control" placeholder="Z" value="0">
+          </div>
+          <button id="startDriveBtn" class="btn btn-primary">Drive</button>
+          <button id="stopDriveBtn" class="btn btn-danger">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs" id="controlTabs">
+    <li class="nav-item">
+      <a class="nav-link active" data-toggle="tab" href="#logs">Logs</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="#stream">Stream</a>
+    </li>
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <div class="tab-pane active" id="logs">
+      <div class="row mt-4">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header">
+              <h5>Speed Chart</h5>
             </div>
-            <div class="col-md-6">
-              <dl class="row">
-                <dt class="col-sm-4">Health Status</dt>
-                <dd class="col-sm-8">
-                  <div class="progress">
-                    <div class="progress-bar bg-{{ health_status_class }}" 
-                         role="progressbar" 
-                         style="width: {{ robot.healthStatus }}%"
-                         aria-valuenow="{{ robot.healthStatus }}" 
-                         aria-valuemin="0" 
-                         aria-valuemax="100">
-                      {{ robot.healthStatus }}%
-                    </div>
-                  </div>
-                </dd>
-                
-                <dt class="col-sm-4">Active Status</dt>
-                <dd class="col-sm-8">
-                  <span class="badge badge-{% if robot.isActive %}success{% else %}danger{% endif %}">
-                    {% if robot.isActive %}Active{% else %}Inactive{% endif %}
-                  </span>
-                </dd>
-              </dl>
+            <div class="card-body">
+              <canvas id="speedChart"></canvas>
             </div>
           </div>
-
-          <div class="row mt-4">
-            <div class="col-md-6">
-              <h4 class="mb-3">Technical Specifications</h4>
-              <dl class="row">
-                <dt class="col-sm-4">Simulation Session</dt>
-                <dd class="col-sm-8">{{ robot.simulationSession }}</dd>
-                
-                <dt class="col-sm-4">Camera Top</dt>
-                <dd class="col-sm-8">{{ robot.cameraTop }}</dd>
-                
-                <dt class="col-sm-4">Camera Front</dt>
-                <dd class="col-sm-8">{{ robot.cameraFront }}</dd>
-              </dl>
+        </div>
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header">
+              <h5>Telemetry Logs</h5>
             </div>
-            <div class="col-md-6">
-              <h4 class="mb-3">Ownership</h4>
-              <dl class="row">
-                <dt class="col-sm-4">Owner</dt>
-                <dd class="col-sm-8">{{ robot.owner.username }}</dd>
-                
-                <dt class="col-sm-4">Organization</dt>
-                <dd class="col-sm-8">{{ robot.owner.profile.org.organizationName }}</dd>
-                
-                <dt class="col-sm-4">Created At</dt>
-                <dd class="col-sm-8">{{ robot.created_at|date:"M d, Y H:i" }}</dd>
-              </dl>
+            <div class="card-body">
+              <div id="telemetryLogs" class="telemetry-container"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="stream">
+      <div class="row mt-4">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header">
+              <h5>Video Stream</h5>
+              <button id="attachCameraBtn" class="btn btn-sm btn-primary">Attach</button>
+              <button id="detachCameraBtn" class="btn btn-sm btn-danger">Detach</button>
+            </div>
+            <div class="card-body">
+              <img id="videoStream" class="video-stream" style="display: none;">
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
   {% include "includes/footer.html" %}
 </div>
-{% endblock content %}
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'assets/js/robot_control.js' %}"></script>
+<script>
+const ROBOT_ID = "{{ robot.id }}";
+const API_BASE = "http://localhost:8000";
+</script>
+{% endblock %}

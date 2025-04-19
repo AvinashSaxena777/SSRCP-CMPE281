@@ -230,10 +230,14 @@ def bulk_delete_robots(request):
 
 def robot_detail(request, robot_id):
     robot = get_object_or_404(Robot, id=robot_id)
-    context = {
+    return render(request, 'home/robot.html', {
         'robot': robot,
-        'health_status_class': 'success' if robot.healthStatus > 75 
-                             else 'warning' if robot.healthStatus > 50 
-                             else 'danger'
-    }
-    return render(request, 'home/robot.html', context)
+        'api_base': 'http://localhost:8000'  # FastAPI URL
+    })
+    # context = {
+    #     'robot': robot,
+    #     'health_status_class': 'success' if robot.healthStatus > 75 
+    #                          else 'warning' if robot.healthStatus > 50 
+    #                          else 'danger'
+    # }
+    # return render(request, 'home/robot.html', context)
