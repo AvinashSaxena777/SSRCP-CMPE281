@@ -120,6 +120,9 @@ STATICFILES_DIRS = (
     os.path.join(CORE_DIR, 'apps/static'),
 )
 
-
+MEDIA_ROOT = (
+CORE_DIR
+)
+MEDIA_URL = '/ai_analytics/'
 #############################################################
 #############################################################

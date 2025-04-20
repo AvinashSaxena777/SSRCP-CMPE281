@@ -20,7 +20,7 @@ from .dao.dashboard_dao import *
 from .dao.robot_dao import RobotDAO
 from django.db import transaction
 import json
-
+from .dao.analytics_dao import *
 
 @login_required(login_url="/login/")
 def index(request):
@@ -241,3 +241,15 @@ def robot_detail(request, robot_id):
     #                          else 'danger'
     # }
     # return render(request, 'home/robot.html', context)
+
+def ai_analytics(request):
+    dummy = 'dummy' in request.GET
+    
+    context = {
+        'daily_alerts': get_daily_alerts(dummy),
+        'detection_types': get_detection_type_distribution(dummy),
+        'alert_status': get_alert_status_distribution(dummy),
+        'validation': get_validation_distribution(dummy),
+        'analytics': AIAnalytic.objects.all() if not dummy else []
+    }
+    return render(request, 'home/ai_analytics.html', context)
