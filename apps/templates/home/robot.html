@@ -13,122 +13,178 @@
           <a href="{% url 'robot_dashboard' %}" class="btn btn-sm btn-neutral">Back to Dashboard</a>
         </div>
       </div>
-      
-      <!-- Metrics Cards -->
-      <div class="row">
-        <div class="col-xl-3 col-md-6">
-          <div class="card card-stats">
-            <div class="card-body">
-              <div class="row">
-                <div class="col">
-                  <h5 class="card-title text-uppercase text-muted mb-0">Speed</h5>
-                  <span class="h2 font-weight-bold mb-0" id="speed-value">0 km/h</span>
-                </div>
-                <div class="col-auto">
-                  <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
-                    <i class="fas fa-tachometer-alt"></i>
-                  </div>
-                </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+  <!-- Alerts Section -->
+  {% if messages %}
+  <div class="alert-container">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Control Panels and Robot Info -->
+  <div class="row">
+    <!-- Vehicle Controls -->
+    <div class="col-md-6 alert-container">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Vehicle Controls</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <input type="number" id="spawnX" class="form-control" placeholder="X" value="0">
               </div>
+              <div class="form-group">
+                <input type="number" id="spawnY" class="form-control" placeholder="Y" value="0">
+              </div>
+              <div class="form-group">
+                <input type="number" id="spawnZ" class="form-control" placeholder="Z" value="0">
+              </div>
+              <button class="btn btn-primary" onclick="spawnVehicle()">Spawn</button>
+              <button class="btn btn-danger" onclick="destroyVehicle()">Destroy</button>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <input type="number" id="targetX" class="form-control" placeholder="X" value="0">
+              </div>
+              <div class="form-group">
+                <input type="number" id="targetY" class="form-control" placeholder="Y" value="0">
+              </div>
+              <div class="form-group">
+                <input type="number" id="targetZ" class="form-control" placeholder="Z" value="0">
+              </div>
+              <button class="btn btn-primary" onclick="startDrive()">Drive</button>
+              <button class="btn btn-danger" onclick="stopDrive()">Stop</button>
             </div>
           </div>
         </div>
-        <div class="col-xl-3 col-md-6">
-          <div class="card card-stats">
-            <div class="card-body">
-              <div class="row">
-                <div class="col">
-                  <h5 class="card-title text-uppercase text-muted mb-0">Throttle</h5>
-                  <span class="h2 font-weight-bold mb-0" id="throttle-value">0%</span>
-                </div>
-                <div class="col-auto">
-                  <div class="icon icon-shape bg-gradient-warning text-white rounded-circle shadow">
-                    <i class="fas fa-car-side"></i>
-                  </div>
+      </div>
+    </div>
+
+    <!-- Robot Information -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Robot Details</h5>
+        </div>
+        <div class="card-body">
+          <dl class="row">
+            <dt class="col-sm-4">Robot ID</dt>
+            <dd class="col-sm-8">{{ robot.robotId }}</dd>
+            
+            <dt class="col-sm-4">Model</dt>
+            <dd class="col-sm-8">{{ robot.get_modelName_display }}</dd>
+            
+            <dt class="col-sm-4">Version</dt>
+            <dd class="col-sm-8">{{ robot.version }}</dd>
+            
+            <dt class="col-sm-4">Front Camera</dt>
+            <dd class="col-sm-8">{{ robot.cameraFront }}</dd>
+            
+            <dt class="col-sm-4">Top Camera</dt>
+            <dd class="col-sm-8">{{ robot.cameraTop }}</dd>
+            
+            <dt class="col-sm-4">Health Status</dt>
+            <dd class="col-sm-8">
+              <div class="progress">
+                <div class="progress-bar bg-{{ health_status_class }}" 
+                     style="width: {{ robot.healthStatus }}%">
+                  {{ robot.healthStatus }}%
                 </div>
               </div>
-            </div>
-          </div>
+            </dd>
+          </dl>
         </div>
-        <div class="col-xl-3 col-md-6">
-          <div class="card card-stats">
-            <div class="card-body">
-              <div class="row">
-                <div class="col">
-                  <h5 class="card-title text-uppercase text-muted mb-0">Steering</h5>
-                  <span class="h2 font-weight-bold mb-0" id="steering-value">0°</span>
-                </div>
-                <div class="col-auto">
-                  <div class="icon icon-shape bg-gradient-danger text-white rounded-circle shadow">
-                    <i class="fas fa-compass"></i>
-                  </div>
-                </div>
-              </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metrics Cards -->
+  <div class="row">
+    <div class="col-xl-3 col-md-6">
+      <div class="card card-stats">
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <h5 class="card-title text-uppercase text-muted mb-0">Speed</h5>
+              <span class="h2 font-weight-bold mb-0" id="speed-value">0 km/h</span>
             </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-          <div class="card card-stats">
-            <div class="card-body">
-              <div class="row">
-                <div class="col">
-                  <h5 class="card-title text-uppercase text-muted mb-0">Brake</h5>
-                  <span class="h2 font-weight-bold mb-0" id="brake-value">0%</span>
-                </div>
-                <div class="col-auto">
-                  <div class="icon icon-shape bg-gradient-success text-white rounded-circle shadow">
-                    <i class="fas fa-stop-circle"></i>
-                  </div>
-                </div>
+            <div class="col-auto">
+              <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                <i class="fas fa-tachometer-alt"></i>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-<div class="container-fluid mt--6">
-  <!-- Control Panels -->
-  <div class="card mb-4">
-    <div class="card-header">
-      <h3 class="mb-0">Vehicle Controls</h3>
-    </div>
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-6">
-          <div class="form-group">
-            <input type="number" id="spawnX" class="form-control" placeholder="X" value="0">
+    <div class="col-xl-3 col-md-6">
+      <div class="card card-stats">
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <h5 class="card-title text-uppercase text-muted mb-0">Throttle</h5>
+              <span class="h2 font-weight-bold mb-0" id="throttle-value">0%</span>
+            </div>
+            <div class="col-auto">
+              <div class="icon icon-shape bg-gradient-warning text-white rounded-circle shadow">
+                <i class="fas fa-car-side"></i>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <input type="number" id="spawnY" class="form-control" placeholder="Y" value="0">
-          </div>
-          <div class="form-group">
-            <input type="number" id="spawnZ" class="form-control" placeholder="Z" value="0">
-          </div>
-          <button id="spawnBtn" class="btn btn-primary">Spawn</button>
-          <button id="destroyBtn" class="btn btn-danger">Destroy</button>
         </div>
-        <div class="col-md-6">
-          <div class="form-group">
-            <input type="number" id="targetX" class="form-control" placeholder="X" value="0">
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card card-stats">
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <h5 class="card-title text-uppercase text-muted mb-0">Steering</h5>
+              <span class="h2 font-weight-bold mb-0" id="steering-value">0°</span>
+            </div>
+            <div class="col-auto">
+              <div class="icon icon-shape bg-gradient-danger text-white rounded-circle shadow">
+                <i class="fas fa-compass"></i>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <input type="number" id="targetY" class="form-control" placeholder="Y" value="0">
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card card-stats">
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <h5 class="card-title text-uppercase text-muted mb-0">Brake</h5>
+              <span class="h2 font-weight-bold mb-0" id="brake-value">0%</span>
+            </div>
+            <div class="col-auto">
+              <div class="icon icon-shape bg-gradient-success text-white rounded-circle shadow">
+                <i class="fas fa-stop-circle"></i>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <input type="number" id="targetZ" class="form-control" placeholder="Z" value="0">
-          </div>
-          <button id="startDriveBtn" class="btn btn-primary">Drive</button>
-          <button id="stopDriveBtn" class="btn btn-danger">Stop</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Tabs -->
-  <ul class="nav nav-tabs" id="controlTabs">
+  <ul class="nav nav-tabs mt-4" id="controlTabs">
     <li class="nav-item">
       <a class="nav-link active" data-toggle="tab" href="#logs">Logs</a>
     </li>
@@ -138,43 +194,49 @@
   </ul>
 
   <!-- Tab Content -->
-  <div class="tab-content">
+  <div class="tab-content mt-4">
+    <!-- Logs Tab -->
     <div class="tab-pane active" id="logs">
-      <div class="row mt-4">
-        <div class="col-md-8">
+      <div class="row">
+        <div class="col-md-6">
           <div class="card">
             <div class="card-header">
               <h5>Speed Chart</h5>
             </div>
             <div class="card-body">
-              <canvas id="speedChart"></canvas>
+              <canvas id="speedChart" style="height: 300px;"></canvas>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
           <div class="card">
             <div class="card-header">
               <h5>Telemetry Logs</h5>
             </div>
-            <div class="card-body">
-              <div id="telemetryLogs" class="telemetry-container"></div>
+            <div class="card-body p-0">
+              <div id="telemetryLogs" class="telemetry-container p-3"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Stream Tab -->
     <div class="tab-pane" id="stream">
-      <div class="row mt-4">
+      <div class="row">
         <div class="col-md-8">
           <div class="card">
             <div class="card-header">
-              <h5>Video Stream</h5>
-              <button id="attachCameraBtn" class="btn btn-sm btn-primary">Attach</button>
-              <button id="detachCameraBtn" class="btn btn-sm btn-danger">Detach</button>
+              <h5>Video Stream Controls</h5>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-primary" onclick="attachCamera()">Attach</button>
+                <button class="btn btn-sm btn-danger" onclick="detachCamera()">Detach</button>
+                <button class="btn btn-sm btn-success" id="startVideoBtn" data-streaming="false" onclick="toggleVideoStream()">Start Video</button>
+                <button class="btn btn-sm btn-danger" onclick="stopVideo()">Stop Video</button>
+              </div>
             </div>
             <div class="card-body">
-              <img id="videoStream" class="video-stream" style="display: none;">
+              <img id="videoStream" class="video-stream img-fluid">
             </div>
           </div>
         </div>
@@ -188,6 +250,8 @@
 
 {% block javascripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@2.0.0"></script>
 <script src="{% static 'assets/js/robot_control.js' %}"></script>
 <script>
 const ROBOT_ID = "{{ robot.id }}";
