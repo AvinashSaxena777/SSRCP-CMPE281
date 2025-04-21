@@ -9,11 +9,11 @@
 ```
 pip install -r requirements.txt
 ```
-5. Run Django migrations
+5. Run Django makemigrations
 ```
 python manage.py makemigrations
 ```
-6. Run Django makemigrations
+6. Run Django migrate
 ```
 python manage.py migrate
 ```
@@ -29,9 +29,10 @@ python manage.py createsuperuser
 ```
 python manage.py runserver
 ```
+10. Login in application with your superuser credentials
 
 ## Carla Integration
-1. Install Carla in local or vm following installation instruction from Resources/Carla_Setup.pdf
+1. Install Carla (version carla-0.9.15) in local or vm following installation instruction from Resources/Carla_Setup.pdf
 2. If using vm, perform execute this ssh tunneling command
 ```
 ssh -f -N -L 2000:localhost:2000 -L 2001:localhost:2001 userName@IPofVM
