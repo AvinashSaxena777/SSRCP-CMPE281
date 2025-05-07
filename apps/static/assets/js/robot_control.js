@@ -4,6 +4,54 @@ let speedChart = null;
 let telemetrySource = null;
 let videoStreamElement = null;
 let isStreaming = false;
+let spawnMarker = null;
+let destMarker = null;
+let currentMode = 'spawn'; // 'spawn' or 'destination'
+let map; // Global map reference
+
+function initMap() {
+    if (map) map.remove();
+    
+    map = L.map('controlMap', {
+        center: [37.3352, -121.8811],
+        zoom: 15
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Initialize markers
+    spawnMarker = null;
+    destMarker = null;
+
+    map.on('click', function(e) {
+        const coords = e.latlng;
+        if(currentMode === 'spawn') {
+            if(spawnMarker) map.removeLayer(spawnMarker);
+            spawnMarker = L.marker(coords, {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41]
+                })
+            }).addTo(map);
+            document.getElementById('spawnCoords').textContent = 
+                `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`;
+        } else {
+            if(destMarker) map.removeLayer(destMarker);
+            destMarker = L.marker(coords, {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41]
+                })
+            }).addTo(map);
+            document.getElementById('destCoords').textContent = 
+                `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`;
+        }
+    });
+}
 
 Chart.register(ChartStreaming);
 
@@ -61,16 +109,34 @@ function showAlert(message, type = 'success') {
             <span aria-hidden="true">&times;</span>
         </button>
     `;
-    const container = document.querySelector('.alert-container');
+    
+    // Get or create alert container
+    let container = document.querySelector('.alert-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'alert-container';
+        document.body.prepend(container);
+    }
+    
     container.prepend(alert);
     setTimeout(() => alert.remove(), 3000);
 }
 
 
 async function spawnVehicle() {
-    const x = document.getElementById('spawnX').value;
-    const y = document.getElementById('spawnY').value;
-    const z = document.getElementById('spawnZ').value;
+    if(!spawnMarker) {
+        showAlert('Please set a spawn point on the map first!', 'danger');
+        return;
+      }
+      
+    const coords = spawnMarker.getLatLng();
+    
+    // const x = document.getElementById('spawnX').value;
+    // const y = document.getElementById('spawnY').value;
+    // const z = document.getElementById('spawnZ').value;
+    const x = coords.lng;
+    const y = coords.lat;
+    const z = 0; // Assuming a flat surface for simplicity
     
     try {
         const response = await fetch(
@@ -96,10 +162,19 @@ async function destroyVehicle() {
 }
 
 async function startDrive() {
-    const x = document.getElementById('targetX').value;
-    const y = document.getElementById('targetY').value;
-    const z = document.getElementById('targetZ').value;
+    if(!destMarker) {
+        showAlert('Please set a destination on the map first!', 'danger');
+        return;
+      }
     
+    const coords = destMarker.getLatLng();
+    // const x = document.getElementById('targetX').value;
+    // const y = document.getElementById('targetY').value;
+    // const z = document.getElementById('targetZ').value;
+    
+    const x = coords.lng;
+    const y = coords.lat; 
+    const z = 0; // Assuming a flat surface for simplicity        
     try {
         const response = await fetch(
             `${API_BASE}/robots/${ROBOT_ID}/start_drive?x=${x}&y=${y}&z=${z}`,
@@ -265,10 +340,23 @@ function connectVideoStream() {
 // }
 // Initialize without auto-connecting
 document.addEventListener('DOMContentLoaded', () => {
+    initMap();
     initChart();
     connectTelemetry();
     // setupEventListeners();
     videoStreamElement = document.getElementById('videoStream');
+    // Mode button handlers
+    document.getElementById('setSpawnBtn').addEventListener('click', function() {
+        currentMode = 'spawn';
+        this.classList.add('active');
+        document.getElementById('setDestinationBtn').classList.remove('active');
+    });
+
+    document.getElementById('setDestinationBtn').addEventListener('click', function() {
+        currentMode = 'destination';
+        this.classList.add('active');
+        document.getElementById('setSpawnBtn').classList.remove('active');
+    });
 });
 
 function toggleVideoStream() {
@@ -293,6 +381,7 @@ document.querySelectorAll('[data-toggle="tab"]').forEach(tab => {
         }
     });
 });
+
 // document.getElementById('stream-tab').addEventListener('shown.bs.tab', function() {
 //     document.getElementById('videoStream').style.display = 'block';
 // });

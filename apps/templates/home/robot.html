@@ -18,7 +18,6 @@
 </div>
 
 <div class="container-fluid mt--6">
-  <!-- Alerts Section -->
   {% if messages %}
   <div class="alert-container">
     {% for message in messages %}
@@ -31,85 +30,88 @@
     {% endfor %}
   </div>
   {% endif %}
-
-  <!-- Control Panels and Robot Info -->
+  <div class="alert-container"></div>
+  <!-- Map and Controls Section -->
   <div class="row">
-    <!-- Vehicle Controls -->
-    <div class="col-md-6 alert-container">
+
+      <!-- Robot Information -->
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Robot Details</h5>
+          </div>
+          <div class="card-body">
+            <dl class="row">
+              <dt class="col-sm-4">Robot ID</dt>
+              <dd class="col-sm-8">{{ robot.robotId }}</dd>
+              
+              <dt class="col-sm-4">Model</dt>
+              <dd class="col-sm-8">{{ robot.get_modelName_display }}</dd>
+              
+              <dt class="col-sm-4">Version</dt>
+              <dd class="col-sm-8">{{ robot.version }}</dd>
+              
+              <dt class="col-sm-4">Front Camera</dt>
+              <dd class="col-sm-8">{{ robot.cameraFront }}</dd>
+              
+              <dt class="col-sm-4">Top Camera</dt>
+              <dd class="col-sm-8">{{ robot.cameraTop }}</dd>
+              
+              <dt class="col-sm-4">Health Status</dt>
+              <dd class="col-sm-8">
+                <div class="progress">
+                  <div class="progress-bar bg-{{ health_status_class }}" 
+                       style="width: {{ robot.healthStatus }}%">
+                    {{ robot.healthStatus }}%
+                  </div>
+                </div>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Coordinate Selection Map</h5>
+          <div class="btn-group mt-2">
+            <button id="setSpawnBtn" class="btn btn-sm btn-primary active">Set Spawn Point</button>
+            <button id="setDestinationBtn" class="btn btn-sm btn-info">Set Destination</button>
+          </div>
+        </div>
+        <div class="card-body p-0" style="height: 500px;">
+          <div id="controlMap" style="height: 100%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
       <div class="card">
         <div class="card-header">
           <h5 class="mb-0">Vehicle Controls</h5>
         </div>
         <div class="card-body">
           <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <input type="number" id="spawnX" class="form-control" placeholder="X" value="0">
-              </div>
-              <div class="form-group">
-                <input type="number" id="spawnY" class="form-control" placeholder="Y" value="0">
-              </div>
-              <div class="form-group">
-                <input type="number" id="spawnZ" class="form-control" placeholder="Z" value="0">
-              </div>
-              <button class="btn btn-primary" onclick="spawnVehicle()">Spawn</button>
-              <button class="btn btn-danger" onclick="destroyVehicle()">Destroy</button>
+            <div class="col-12">
+              <button class="btn btn-primary btn-block mb-3" onclick="spawnVehicle()">Spawn Vehicle</button>
+              <button class="btn btn-danger btn-block mb-3" onclick="destroyVehicle()">Destroy Vehicle</button>
+              <button class="btn btn-success btn-block mb-3" onclick="startDrive()">Start Drive</button>
+              <button class="btn btn-warning btn-block mb-3" onclick="stopDrive()">Stop Drive</button>
             </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <input type="number" id="targetX" class="form-control" placeholder="X" value="0">
-              </div>
-              <div class="form-group">
-                <input type="number" id="targetY" class="form-control" placeholder="Y" value="0">
-              </div>
-              <div class="form-group">
-                <input type="number" id="targetZ" class="form-control" placeholder="Z" value="0">
-              </div>
-              <button class="btn btn-primary" onclick="startDrive()">Drive</button>
-              <button class="btn btn-danger" onclick="stopDrive()">Stop</button>
+          </div>
+          <div class="row mt-3">
+            <div class="col-12">
+              <h6>Current Coordinates</h6>
+              <p>Spawn Point: <span id="spawnCoords">Not set</span></p>
+              <p>Destination: <span id="destCoords">Not set</span></p>
             </div>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Robot Information -->
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">Robot Details</h5>
-        </div>
-        <div class="card-body">
-          <dl class="row">
-            <dt class="col-sm-4">Robot ID</dt>
-            <dd class="col-sm-8">{{ robot.robotId }}</dd>
-            
-            <dt class="col-sm-4">Model</dt>
-            <dd class="col-sm-8">{{ robot.get_modelName_display }}</dd>
-            
-            <dt class="col-sm-4">Version</dt>
-            <dd class="col-sm-8">{{ robot.version }}</dd>
-            
-            <dt class="col-sm-4">Front Camera</dt>
-            <dd class="col-sm-8">{{ robot.cameraFront }}</dd>
-            
-            <dt class="col-sm-4">Top Camera</dt>
-            <dd class="col-sm-8">{{ robot.cameraTop }}</dd>
-            
-            <dt class="col-sm-4">Health Status</dt>
-            <dd class="col-sm-8">
-              <div class="progress">
-                <div class="progress-bar bg-{{ health_status_class }}" 
-                     style="width: {{ robot.healthStatus }}%">
-                  {{ robot.healthStatus }}%
-                </div>
-              </div>
-            </dd>
-          </dl>
-        </div>
-      </div>
-    </div>
   </div>
+</div>
 
   <!-- Metrics Cards -->
   <div class="row">
@@ -246,9 +248,12 @@
 
   {% include "includes/footer.html" %}
 </div>
-{% endblock %}
+{% endblock content %}
 
 {% block javascripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@2.0.0"></script>
@@ -257,4 +262,4 @@
 const ROBOT_ID = "{{ robot.id }}";
 const API_BASE = "http://localhost:8000";
 </script>
-{% endblock %}
+{% endblock javascripts %}

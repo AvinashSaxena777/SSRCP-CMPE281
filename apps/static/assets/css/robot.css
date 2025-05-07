@@ -28,3 +28,25 @@
     min-width: 300px;
 } */
 
+#controlMap {
+    height: 100%; /* Use 100% height relative to parent */
+    width: 100%;
+    z-index: 1;
+}
+
+/* Ensure parent containers have proper height */
+.card-body.p-0 {
+    height: 500px; /* Fixed height for the map container's parent */
+    position: relative;
+}
+
+.card {
+    height: auto; /* Ensure the card adjusts to its content */
+}
+
+.leaflet-container {
+    height: 100%; /* Ensure the Leaflet map fills its container */
+    background: #1a1a1a;
+}
+
+
