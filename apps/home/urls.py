@@ -29,4 +29,5 @@ urlpatterns = [
     path('schedules/create/', views.create_schedule, name='create_schedule'),
     path('schedules/bulk-delete/', views.bulk_delete_schedules, name='bulk_delete_schedules'),
     path('schedules/<int:schedule_id>/delete/', views.delete_schedule, name='delete_schedule'),
+    path('analytics-map/', views.analytics_map, name='analytics_map'),
 ]

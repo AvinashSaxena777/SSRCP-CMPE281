@@ -298,3 +298,10 @@ def delete_schedule(request, schedule_id):
         ScheduleDAO.delete_schedule(schedule_id)
         return HttpResponse(status=200)
     return HttpResponse(status=400)
+
+def analytics_map(request):
+    context = {
+        'analytics': AIAnalytic.objects.exclude(latitude__isnull=True)
+                                       .exclude(longitude__isnull=True)
+    }
+    return render(request, 'home/analytics_map.html', context)

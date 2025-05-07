@@ -9,3 +9,9 @@
     align-items: center; /* Center the chart vertically */
     height: 300px; /* Match the height of the charts */
 }
+#analyticsMap {
+    height: 580px;
+    width: 100%;
+    background: #f8f9fa;
+    z-index: 1;
+  }

@@ -1,0 +1,182 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} AI Analytics Map {% endblock title %}
+
+{% block content %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-lg-6 col-7">
+          <h6 class="h2 text-white d-inline-block mb-0">AI Detections Map</h6>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--6">
+  <div class="card">
+    <div class="card-header">
+      <div class="row align-items-center">
+        <div class="col-md-4">
+          <select class="form-control" id="filterType">
+            <option value="all">All Detection Types</option>
+            <option value="fire">Fire</option>
+            <option value="violence">Violence</option>
+            <option value="accident">Accident</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-control" id="filterSeverity">
+            <option value="all">All Severities</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-control" id="filterResolved">
+            <option value="all">All Statuses</option>
+            <option value="true">Resolved</option>
+            <option value="false">Unresolved</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0" style="height: 600px;">
+      <div id="analyticsMap"></div>
+    </div>
+  </div>
+
+  <!-- Detection Detail Modal -->
+  <div class="modal fade" id="detailModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Detection Details</h5>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <img id="detailImage" class="img-fluid" alt="Detection Image">
+            </div>
+            <div class="col-md-6">
+              <dl class="row">
+                <dt class="col-sm-4">Type:</dt>
+                <dd class="col-sm-8" id="detailType"></dd>
+                <dt class="col-sm-4">Severity:</dt>
+                <dd class="col-sm-8" id="detailSeverity"></dd>
+                <dt class="col-sm-4">Status:</dt>
+                <dd class="col-sm-8" id="detailStatus"></dd>
+                <dt class="col-sm-4">Detected At:</dt>
+                <dd class="col-sm-8" id="detailTimestamp"></dd>
+                <dt class="col-sm-4">Coordinates:</dt>
+                <dd class="col-sm-8" id="detailCoords"></dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/footer.html" %}
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let map;
+    let markers = [];
+
+    // Initialize Map
+    function initMap() {
+        map = L.map('analyticsMap').setView([37.3352, -121.8811], 17);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add markers from Django template context
+        {% for analytic in analytics %}
+{% if analytic.latitude and analytic.longitude %}
+markers.push(
+    L.marker([{{ analytic.latitude }}, {{ analytic.longitude }}], {
+        icon: L.icon({
+            iconUrl: '{% if analytic.resolved %}/static/assets/img/marker-green.png{% else %}/static/assets/img/marker-red.png{% endif %}',
+            iconSize: [32, 41],
+            iconAnchor: [16, 41]
+        }),
+        detectionType: '{{ analytic.detection_type }}',
+        severity: '{{ analytic.severity }}',
+        resolved: {{ analytic.resolved|yesno:"true,false" }},
+        image: '{{ analytic.image.url }}',
+        timestamp: '{{ analytic.created_at|date:"M d, Y H:i" }}'
+    }).addTo(map).on('click', function(e) {
+        showDetails(e.target.options, e.latlng);
+    })
+);
+{% endif %}
+{% endfor %}
+    }
+
+    // Show Details Modal
+    function showDetails(data, coords) {
+        const statusHtml = data.resolved ? 
+            '<span class="text-success">Resolved</span>' : 
+            '<span class="text-danger">Unresolved</span>';
+        
+        document.getElementById('detailImage').src = data.image;
+        document.getElementById('detailType').textContent = data.detectionType.charAt(0).toUpperCase() + data.detectionType.slice(1);
+        document.getElementById('detailSeverity').textContent = data.severity;
+        document.getElementById('detailStatus').innerHTML = statusHtml;
+        document.getElementById('detailTimestamp').textContent = data.timestamp;
+        document.getElementById('detailCoords').textContent = 
+            `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`;
+        
+        $('#detailModal').modal('show');
+    }
+
+    // Filter Markers
+    function filterMarkers() {
+        const typeFilter = document.getElementById('filterType').value;
+        const severityFilter = document.getElementById('filterSeverity').value;
+        const resolvedFilter = document.getElementById('filterResolved').value;
+
+        markers.forEach(marker => {
+            const matchType = typeFilter === 'all' || marker.options.detectionType === typeFilter;
+            const matchSeverity = severityFilter === 'all' || marker.options.severity === severityFilter;
+            const matchResolved = resolvedFilter === 'all' || 
+                (resolvedFilter === 'true' && marker.options.resolved) ||
+                (resolvedFilter === 'false' && !marker.options.resolved);
+
+            if (matchType && matchSeverity && matchResolved) {
+                if (!map.hasLayer(marker)) marker.addTo(map);
+            } else {
+                if (map.hasLayer(marker)) map.removeLayer(marker);
+            }
+        });
+    }
+
+    // Initialize
+    initMap();
+    
+    // Add filter event listeners
+    document.getElementById('filterType').addEventListener('change', filterMarkers);
+    document.getElementById('filterSeverity').addEventListener('change', filterMarkers);
+    document.getElementById('filterResolved').addEventListener('change', filterMarkers);
+    
+    // Handle window resize
+    window.addEventListener('resize', () => map.invalidateSize());
+});
+</script>
+{% endblock javascripts %}
