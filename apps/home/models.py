@@ -110,6 +110,8 @@ class Alert(models.Model):
     alert_type = models.IntegerField()
     description = models.IntegerField()
     severity = models.IntegerField()
+    alert_latitude = models.FloatField(default=None)
+    alert_longitude = models.FloatField(default=None)
     status = models.CharField(max_length=255)
     timestamp = models.DateTimeField(null=True, blank=True)
     resolved_by = models.CharField(max_length=255)
@@ -157,6 +159,44 @@ class AIAnalytic(models.Model):
     resolved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    latitude = models.FloatField(null=True)
+    longitude = models.FloatField(null=True)
 
     def __str__(self):
         return f"{self.get_detection_type_display()} detected at {self.frame}"
+    
+class Schedule(models.Model):
+    STATUS_CHOICES = [
+        ('Planned', 'Planned'),
+        ('In Progress', 'In Progress'),
+        ('Failed', 'Failed'),
+        ('Completed', 'Completed'),
+    ]
+    
+    id = models.AutoField(primary_key=True)
+    robot = models.ForeignKey(
+        Robot,
+        on_delete=models.CASCADE,
+        related_name='schedules'
+    )
+    start_latitude = models.FloatField()
+    start_longitude = models.FloatField()
+    dest_latitude = models.FloatField()
+    dest_longitude = models.FloatField()
+    scheduled_at = models.DateTimeField()
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='Planned'
+    )
+    failure_error = models.TextField(null=True, blank=True)
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='scheduled_tasks'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Schedule {self.id} - {self.robot} ({self.status})"

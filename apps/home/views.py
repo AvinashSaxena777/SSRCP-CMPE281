@@ -15,12 +15,14 @@ from .models import Organization
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
-from .models import UserType
+from .models import UserType, Schedule
+from .dao.schedule_dao import ScheduleDAO
 from .dao.dashboard_dao import *
 from .dao.robot_dao import RobotDAO
 from django.db import transaction
 import json
 from .dao.analytics_dao import *
+from django.views.generic import ListView
 
 @login_required(login_url="/login/")
 def index(request):
@@ -253,3 +255,46 @@ def ai_analytics(request):
         'analytics': AIAnalytic.objects.all() if not dummy else []
     }
     return render(request, 'home/ai_analytics.html', context)
+
+class ScheduleListView(ListView):
+    model = Schedule
+    template_name = 'home/schedule_management.html'
+    context_object_name = 'schedules'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['robots'] = Robot.objects.all()
+        context['metrics'] = {
+            'total': Schedule.objects.count(),
+            'in_progress': Schedule.objects.filter(status='In Progress').count(),
+            'completed': Schedule.objects.filter(status='Completed').count(),
+            'failed': Schedule.objects.filter(status='Failed').count()
+        }
+        return context
+
+def create_schedule(request):
+    if request.method == 'POST':
+        ScheduleDAO.create_schedule({
+            'robot': Robot.objects.get(id=request.POST['robot_id']),
+            'start_latitude': request.POST['start_lat'],
+            'start_longitude': request.POST['start_lng'],
+            'dest_latitude': request.POST['dest_lat'],
+            'dest_longitude': request.POST['dest_lng'],
+            'scheduled_at': request.POST['scheduled_at'],
+            'owner': request.user
+        })
+        return HttpResponse(status=201)
+    return HttpResponse(status=400)
+
+def bulk_delete_schedules(request):
+    if request.method == 'POST':
+        schedule_ids = request.POST.getlist('schedule_ids')
+        ScheduleDAO.bulk_delete(schedule_ids)
+        return HttpResponse(status=200)
+    return HttpResponse(status=400)
+
+def delete_schedule(request, schedule_id):
+    if request.method == 'POST':
+        ScheduleDAO.delete_schedule(schedule_id)
+        return HttpResponse(status=200)
+    return HttpResponse(status=400)

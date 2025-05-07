@@ -6,7 +6,7 @@ Copyright (c) 2019 - present AppSeed.us
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from .models import UserType, Organization, UserProfile, Robot, Alert, AIAnalytic
+from .models import UserType, Organization, UserProfile, Robot, Alert, AIAnalytic, Schedule
 # Register your models here.
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
@@ -30,3 +30,4 @@ admin.site.register(Organization)
 admin.site.register(Robot)
 admin.site.register(Alert)
 admin.site.register(AIAnalytic)
+admin.site.register(Schedule)

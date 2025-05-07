@@ -25,4 +25,8 @@ urlpatterns = [
     path('robots/bulk-delete/', views.bulk_delete_robots, name='bulk_delete_robots'),
     path('robots/<int:robot_id>/', views.robot_detail, name='robot_detail'),
     path('ai-analytics/', views.ai_analytics, name='ai_analytics'),
+    path('schedules/', views.ScheduleListView.as_view(), name='schedule_management'),
+    path('schedules/create/', views.create_schedule, name='create_schedule'),
+    path('schedules/bulk-delete/', views.bulk_delete_schedules, name='bulk_delete_schedules'),
+    path('schedules/<int:schedule_id>/delete/', views.delete_schedule, name='delete_schedule'),
 ]
