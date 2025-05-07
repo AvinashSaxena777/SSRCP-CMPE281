@@ -1,0 +1,11 @@
+.chart-canvas {
+    height: 300px !important; /* Set a fixed height for all charts */
+    max-height: 300px; /* Prevent charts from exceeding this height */
+    width: 100%; /* Ensure charts span the full width of their container */
+}
+.card-chart {
+    display: flex; /* Ensure content inside adjusts properly */
+    justify-content: center; /* Center the chart horizontally */
+    align-items: center; /* Center the chart vertically */
+    height: 300px; /* Match the height of the charts */
+}

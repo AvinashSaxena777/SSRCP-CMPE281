@@ -103,7 +103,7 @@
 <div class="container-fluid mt--6">
   <div class="row">
     <div class="col-xl-8">
-      <div class="card">
+      <div class="card card-chart">
         <div class="card-header bg-transparent">
           <h3 class="mb-0">System Activity Timeline</h3>
         </div>
@@ -113,7 +113,7 @@
       </div>
     </div>
     <div class="col-xl-4">
-      <div class="card">
+      <div class="card card-chart">
         <div class="card-header bg-transparent">
           <h3 class="mb-0">Robot Status Distribution</h3>
         </div>
@@ -125,8 +125,8 @@
   </div>
 
   <div class="row mt-4">
-    <div class="col-xl-6">
-      <div class="card">
+    <div class="col-xl-8">
+      <div class="card card-chart">
         <div class="card-header bg-transparent">
           <h3 class="mb-0">Top Organizations</h3>
         </div>
@@ -135,8 +135,8 @@
         </div>
       </div>
     </div>
-    <div class="col-xl-6">
-      <div class="card">
+    <div class="col-xl-4">
+      <div class="card card-chart">
         <div class="card-header bg-transparent">
           <h3 class="mb-0">Alert Types</h3>
         </div>
@@ -152,73 +152,107 @@
 {% endblock content %}
 
 {% block javascripts %}
-<script src="{% static 'assets/vendor/chart.js/dist/Chart.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      // Activity Timeline
-      new Chart(document.getElementById('activityTimeline'), {
-        type: 'line',
-        data: {
-          labels: {{ charts.robot_timeline.labels|safe }},
-          datasets: [
-            {
-              label: 'Robot Activity',
-              data: {{ charts.robot_timeline.data }},
-              borderColor: '#2dce89',
-              tension: 0.4,
-            },
-            {
-              label: 'Alert Activity',
-              data: {{ charts.alert_timeline.data }},
-              borderColor: '#f5365c',
-              tension: 0.4,
-            },
-          ],
+
+  document.addEventListener('DOMContentLoaded', function () {
+    console.log("Chart.version: ", Chart.version);
+    // Activity Timeline
+    new Chart(document.getElementById('activityTimeline'), {
+      type: 'line',
+      data: {
+        labels: {{ charts.robot_timeline.labels|safe }},
+        datasets: [
+          {
+            label: 'Robot Activity',
+            data: {{ charts.robot_timeline.data }},
+            borderColor: '#2dce89',
+            tension: 0.4,
+          },
+          {
+            label: 'Alert Activity',
+            data: {{ charts.alert_timeline.data }},
+            borderColor: '#f5365c',
+            tension: 0.4,
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          legend: {
+            display: true, // Enable legend
+            position: 'top', // Position the legend at the top
+          },
         },
-      });
-  
-      // Robot Status Chart
-      new Chart(document.getElementById('robotStatusChart'), {
-        type: 'doughnut',
-        data: {
-          labels: ['Active', 'Inactive', 'Maintenance'],
-          datasets: [
-            {
-              data: [{{ metrics.robots }}, 15, 8],
-              backgroundColor: ['#2dce89', '#f5365c', '#fb6340'],
-            },
-          ],
-        },
-      });
-  
-      // Organization Distribution
-      new Chart(document.getElementById('orgChart'), {
-        type: 'bar',
-        data: {
-          labels: {{ charts.org_dist.labels|safe }},
-          datasets: [
-            {
-              label: 'Users per Organization',
-              data: {{ charts.org_dist.data }},
-              backgroundColor: '#5e72e4',
-            },
-          ],
-        },
-      });
-  
-      // Alert Type Distribution
-      new Chart(document.getElementById('alertTypeChart'), {
-        type: 'pie',
-        data: {
-          labels: ['Fire', 'Violence', 'Accident'],
-          datasets: [
-            {
-              data: [45, 30, 25],
-              backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56'],
-            },
-          ],
-        },
-      });
+      },
     });
-  </script>
+
+    // Robot Status Chart
+    new Chart(document.getElementById('robotStatusChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Active', 'Inactive', 'Maintenance'],
+        datasets: [
+          {
+            data: [{{ metrics.robots }}, 15, 8],
+            backgroundColor: ['#2dce89', '#f5365c', '#fb6340'],
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          legend: {
+            display: true, // Enable legend
+            position: 'right', // Position the legend to the right
+          },
+        },
+      },
+    });
+
+    // Organization Distribution
+    new Chart(document.getElementById('orgChart'), {
+      type: 'bar',
+      data: {
+        labels: {{ charts.org_dist.labels|safe }},
+        datasets: [
+          {
+            label: 'Users per Organization',
+            data: {{ charts.org_dist.data }},
+            backgroundColor: '#5e72e4',
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          legend: {
+            display: true, // Enable legend
+            position: 'top', // Position the legend at the top
+          },
+        },
+      },
+    });
+
+    // Alert Type Distribution
+    new Chart(document.getElementById('alertTypeChart'), {
+      type: 'pie',
+      data: {
+        labels: ['Fire', 'Violence', 'Accident'],
+        datasets: [
+          {
+            data: [45, 30, 25],
+            backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56'],
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          legend: {
+            display: true, // Enable legend
+            position: 'right', // Position the legend at the bottom
+          },
+        },
+      },
+    });
+  });
+</script>
 {% endblock javascripts %}
