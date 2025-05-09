@@ -8,6 +8,7 @@ let spawnMarker = null;
 let destMarker = null;
 let currentMode = 'spawn'; // 'spawn' or 'destination'
 let map; // Global map reference
+let detectionActive = false;
 
 function initMap() {
     if (map) map.remove();
@@ -382,12 +383,105 @@ document.querySelectorAll('[data-toggle="tab"]').forEach(tab => {
     });
 });
 
-// document.getElementById('stream-tab').addEventListener('shown.bs.tab', function() {
-//     document.getElementById('videoStream').style.display = 'block';
-// });
+async function startDetection() {
+    try {
+        const response = await fetch(`${DETECTION_FASTAPI_BASE}/start`, { method: 'POST' });
+        
+        // Update video sources with cache busting
+        const videoContainer = document.getElementById('aiDetection');
+        videoContainer.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Original Stream</h6>
+                    <img src="${DETECTION_FASTAPI_BASE}/original_stream?t=${Date.now()}">
+                </div>
+                <div class="col-md-6">
+                    <h6>Annotated Stream</h6>
+                    <img src="${DETECTION_FASTAPI_BASE}/stream?t=${Date.now()}">
+                </div>
+            </div>
+        `;
+        
+        detectionActive = true;
+        showAlert('Video streaming started', 'success');
+    } catch (error) {
+        showAlert(`Error: ${error.message}`, 'danger');
+    }
+}
 
-// document.getElementById('logs-tab').addEventListener('shown.bs.tab', function() {
-//     document.getElementById('videoStream').style.display = 'none';
+async function stopDetection() {
+    try {
+        await fetch(`${DETECTION_FASTAPI_BASE}/stop`, { method: 'POST' });
+        document.getElementById('aiDetection').innerHTML = '';
+        detectionActive = false;
+        showAlert('Streaming stopped', 'success');
+    } catch (error) {
+        showAlert(`Error: ${error.message}`, 'danger');
+    }
+}
+
+// Handle tab visibility
+document.addEventListener('shown.bs.tab', (e) => {
+    if (e.target.getAttribute('href') === '#aiDetection' && detectionActive) {
+        document.querySelector('#aiDetection img').src = 
+            `${DETECTION_FASTAPI_BASE}/original_stream?t=${Date.now()}`;
+        document.querySelectorAll('#aiDetection img')[1].src = 
+            `${DETECTION_FASTAPI_BASE}/stream?t=${Date.now()}`;
+    }
+});
+
+
+document.getElementById('stream-tab').addEventListener('shown.bs.tab', function() {
+    document.getElementById('videoStream').style.display = 'block';
+});
+
+document.getElementById('logs-tab').addEventListener('shown.bs.tab', function() {
+    document.getElementById('videoStream').style.display = 'none';
+});
+
+
+// async function startDetection() {
+//     try {
+//         // Start AI detection through API
+//         const response = await fetch(`${API_BASE}/robots/${ROBOT_ID}/start_detection`, {
+//             method: 'POST'
+//         });
+        
+//         if (!response.ok) throw new Error('Detection start failed');
+        
+//         // Update video sources
+//         document.getElementById('originalStream').src = 
+//             `${API_BASE}/robots/${ROBOT_ID}/video_feed?t=${Date.now()}`;
+//         document.getElementById('annotatedStream').src = 
+//             `${API_BASE}/robots/${ROBOT_ID}/annotated_feed?t=${Date.now()}`;
+        
+//         detectionActive = true;
+//         showAlert('AI Detection started', 'success');
+//     } catch (error) {
+//         showAlert(`Detection Error: ${error.message}`, 'danger');
+//     }
+// }
+
+// async function stopDetection() {
+//     try {
+//         const response = await fetch(`${API_BASE}/robots/${ROBOT_ID}/stop_detection`, {
+//             method: 'POST'
+//         });
+        
+//         document.getElementById('annotatedStream').src = '';
+//         detectionActive = false;
+//         showAlert('AI Detection stopped', 'success');
+//     } catch (error) {
+//         showAlert(`Stop Error: ${error.message}`, 'danger');
+//     }
+// }
+
+// // Handle tab visibility
+// document.getElementById('aiDetectionTab').addEventListener('shown.bs.tab', function() {
+//     if (detectionActive) {
+//         document.getElementById('annotatedStream').src = 
+//             `${API_BASE}/robots/${ROBOT_ID}/annotated_feed?t=${Date.now()}`;
+//     }
 // });
 
 

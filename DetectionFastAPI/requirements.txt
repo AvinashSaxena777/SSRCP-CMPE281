@@ -1,0 +1,8 @@
+grpcio
+grpcio-tools
+numpy
+opencv-python
+ultralytics
+torch
+fastapi
+uvicorn

@@ -193,6 +193,9 @@
     <li class="nav-item">
       <a class="nav-link" data-toggle="tab" href="#stream">Stream</a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="#aiDetection">AI Detection</a>
+    </li>
   </ul>
 
   <!-- Tab Content -->
@@ -244,6 +247,29 @@
         </div>
       </div>
     </div>
+
+    <div class="tab-pane" id="aiDetection">
+      <div class="card">
+        <div class="card-header">
+          <h5>AI Detection Controls</h5>
+          <button class="btn btn-sm btn-success" onclick="startDetection()">Start Detection</button>
+          <button class="btn btn-sm btn-danger" onclick="stopDetection()">Stop Detection</button>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Original Stream</h6>
+              <img id="originalStream" class="img-fluid">
+            </div>
+            <div class="col-md-6">
+              <h6>Annotated Stream</h6>
+              <img id="annotatedStream" class="img-fluid">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   {% include "includes/footer.html" %}
@@ -261,5 +287,6 @@
 <script>
 const ROBOT_ID = "{{ robot.id }}";
 const API_BASE = "http://localhost:8000";
+const DETECTION_FASTAPI_BASE = "http://localhost:8001"; 
 </script>
 {% endblock javascripts %}
