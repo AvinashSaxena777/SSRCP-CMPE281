@@ -1,4 +1,5 @@
 
+
 let eventSource;
 let speedChart = null;
 let telemetrySource = null;
@@ -382,10 +383,12 @@ document.querySelectorAll('[data-toggle="tab"]').forEach(tab => {
         }
     });
 });
+const headers = new Headers();
+headers.append('x-localtunnel-agent-ips', '130.65.254.13');
 
 async function startDetection() {
     try {
-        const response = await fetch(`${DETECTION_FASTAPI_BASE}/start`, { method: 'POST' });
+        const response = await fetch(`${DETECTION_FASTAPI_BASE}/start`, { method: 'POST', headers:headers });
         
         // Update video sources with cache busting
         const videoContainer = document.getElementById('aiDetection');

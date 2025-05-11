@@ -48,3 +48,9 @@ pip install CarlaFastAPI\carla-0.9.15-cp37-cp37m-win_amd64.whl
 ```
 uvicorn main:app
 ```
+
+
+## Deployment Configurations
+Change this two code lines with actual services in apps\templates\home\robot.html
+Line 291: const API_BASE = "http://djvapxnco.localto.net:1985";
+Line 292: const DETECTION_FASTAPI_BASE = "https://eleven-cups-beg.loca.lt";
