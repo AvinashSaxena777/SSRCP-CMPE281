@@ -1,8 +1,3 @@
-# -*- encoding: utf-8 -*-
-"""
-Copyright (c) 2019 - present AppSeed.us
-"""
-
 import os
 from decouple import config
 from unipath import Path
@@ -18,7 +13,7 @@ SECRET_KEY = config('SECRET_KEY', default='S#perS3crEt_1122')
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 # load production server from .env
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', config('SERVER', default='127.0.0.1')]
+ALLOWED_HOSTS = ['*', '10.0.144.47', 'localhost', '127.0.0.1', config('SERVER', default='127.0.0.1'), 'http://cloud-load-balancer-1488869464.us-east-2.elb.amazonaws.com/']
 
 # Application definition
 
@@ -71,8 +66,15 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME', default='cloud'),
+	'USER': config('DB_USER', default='postgres'),
+	'PASSWORD': config('DB_PASSWORD',default='cloud-project'),
+	'HOST': config('DB_HOST', default='cloud-database.c7cqwo6aucvg.us-east-2.rds.amazonaws.com'),
+	'PORT': config('DB_PORT', default='5432'),
+	'OPTIONS': {
+            'sslmode': 'require'
+        }
     }
 }
 
@@ -125,4 +127,4 @@ CORE_DIR
 )
 MEDIA_URL = '/ai_analytics/'
 #############################################################
-#############################################################
+############################################################# 
